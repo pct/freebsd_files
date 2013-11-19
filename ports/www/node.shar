@@ -1,0 +1,114 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	node
+#	node/distinfo
+#	node/pkg-descr
+#	node/pkg-plist
+#	node/Makefile
+#	node/files
+#	node/files/patch-kqueue.c
+#
+echo c - node
+mkdir -p node > /dev/null 2>&1
+echo x - node/distinfo
+sed 's/^X//' >node/distinfo << 'd7583bf2fd1ac2c63d508c5ae786f840'
+XSHA256 (node-v0.10.22.tar.gz) = 157fc58b3f1d109baefac4eb1d32ae747de5e6d55d87d0e9bec8f8dd10679e7e
+XSIZE (node-v0.10.22.tar.gz) = 13686897
+d7583bf2fd1ac2c63d508c5ae786f840
+echo x - node/pkg-descr
+sed 's/^X//' >node/pkg-descr << '29e0e746783cafec91d00d8c7d637687'
+Xnode - evented I/O for V8 javascript
+X
+XWWW: http://nodejs.org/
+29e0e746783cafec91d00d8c7d637687
+echo x - node/pkg-plist
+sed 's/^X//' >node/pkg-plist << '26691a4e0dd5a3764efa824b814982c5'
+Xbin/node
+Xlib/dtrace/node.d
+Xlib/node_modules/.keepme
+X@dirrm lib/node_modules
+X@dirrm lib/dtrace
+26691a4e0dd5a3764efa824b814982c5
+echo x - node/Makefile
+sed 's/^X//' >node/Makefile << '7598bb39802f592d0f92f4678ad0a069'
+X# Created by: Jin-Sih Lin <linpct@gmail.com>
+X# $FreeBSD: head/www/node/Makefile 330834 2013-10-19 02:48:02Z swills $
+X
+XPORTNAME=	node
+XPORTVERSION=	0.10.22
+XCATEGORIES=	www
+XMASTER_SITES=	http://nodejs.org/dist/v${PORTVERSION}/
+XDISTNAME=	${PORTNAME}-v${PORTVERSION}
+X
+XMAINTAINER=	linpct@gmail.com
+XCOMMENT=	V8 JavaScript for client and server
+X
+XLIB_DEPENDS=	libexecinfo.so:${PORTSDIR}/devel/libexecinfo
+X
+XHAS_CONFIGURE=	yes
+XUSE_LDCONFIG=	yes
+XUSE_PYTHON=	2.7
+XUSES=		gmake
+X
+XCONFLICTS=	node-0.[02-9][0-9]* node-devel-0.[0-9]*
+X
+XONLY_FOR_ARCHS=	i386 amd64
+XCONFIGURE_ARGS=	--prefix=${PREFIX_RELDEST} --without-npm
+XPREFIX_RELDEST=	${PREFIX:S,^${DESTDIR},,}
+XREINPLACE_ARGS=	-i ''
+X
+Xpost-patch:
+X	@${REINPLACE_CMD} -e 's|/usr/local|${LOCALBASE}|' \
+X		${WRKSRC}/deps/v8/build/common.gypi \
+X		${WRKSRC}/deps/v8/tools/gyp/v8.gyp
+X
+Xpost-install:
+X	${MKDIR} ${STAGEDIR}${PREFIX}/lib/node_modules/
+X	${TOUCH} ${STAGEDIR}${PREFIX}/lib/node_modules/.keepme
+X	${CHMOD} ${MANMODE} ${STAGEDIR}${PREFIX}/man/man1/node.1
+X	@${ECHO_MSG}
+X	@${ECHO_MSG} "Note: If you need npm (Node Package Manager), please install www/npm."
+X	@${ECHO_MSG}
+X
+X.include <bsd.port.mk>
+7598bb39802f592d0f92f4678ad0a069
+echo c - node/files
+mkdir -p node/files > /dev/null 2>&1
+echo x - node/files/patch-kqueue.c
+sed 's/^X//' >node/files/patch-kqueue.c << '387c0ef0ad718d4d3a09766aebc62045'
+X--- deps/uv/src/unix/kqueue.orig    2013-11-18 23:14:54.000000000 -0200
+X+++ deps/uv/src/unix/kqueue.c 2013-11-18 23:16:51.000000000 -0200
+X@@ -263,6 +263,25 @@
+X   }
+X }
+X 
+X+ 
+X+void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
+X+  struct kevent* events;
+X+  uintptr_t i;
+X+  uintptr_t nfds;
+X+
+X+  assert(loop->watchers != NULL);
+X+
+X+ events = (struct kevent*) loop->watchers[loop->nwatchers];
+X+  nfds = (uintptr_t) loop->watchers[loop->nwatchers + 1];
+X+  if (events == NULL)
+X+    return;
+X+
+X+  /* Invalidate events with same file descriptor */
+X+  for (i = 0; i < nfds; i++)
+X+    if ((int) events[i].ident == fd)
+X+      events[i].ident = -1;
+X+}
+X+
+X 
+X static void uv__fs_event(uv_loop_t* loop, uv__io_t* w, unsigned int fflags) {
+X   uv_fs_event_t* handle;
+387c0ef0ad718d4d3a09766aebc62045
+exit
+
