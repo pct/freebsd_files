@@ -1,0 +1,113 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	node-devel
+#	node-devel/distinfo
+#	node-devel/pkg-descr
+#	node-devel/pkg-plist
+#	node-devel/Makefile
+#	node-devel/files
+#	node-devel/files/patch-platform-freebsd.cc
+#
+echo c - node-devel
+mkdir -p node-devel > /dev/null 2>&1
+echo x - node-devel/distinfo
+sed 's/^X//' >node-devel/distinfo << 'f9f81502acff733fe6bf47285bfc88c6'
+XSHA256 (node-v0.11.8.tar.gz) = 87c809dea764d5d66f925626fba403fb2fb0c0ccfad408bf79fdb62dc246d65b
+XSIZE (node-v0.11.8.tar.gz) = 14937740
+f9f81502acff733fe6bf47285bfc88c6
+echo x - node-devel/pkg-descr
+sed 's/^X//' >node-devel/pkg-descr << '786dbefd21b2f90c753c47e237f8ed76'
+Xnode - evented I/O for V8 javascript
+X
+XWWW: http://nodejs.org/
+786dbefd21b2f90c753c47e237f8ed76
+echo x - node-devel/pkg-plist
+sed 's/^X//' >node-devel/pkg-plist << 'de5fca0285b1d30d86a5bdfc93b8cda2'
+Xbin/node
+Xlib/dtrace/node.d
+Xlib/node_modules/.keepme
+Xshare/systemtap/tapset/node.stp
+X@dirrmtry share/systemtap/tapset
+X@dirrmtry share/systemtap
+X@dirrmtry lib/node_modules
+X@dirrmtry lib/dtrace
+de5fca0285b1d30d86a5bdfc93b8cda2
+echo x - node-devel/Makefile
+sed 's/^X//' >node-devel/Makefile << '3e6c3f8bf1ced45dee155fbad1c11c68'
+X# $FreeBSD: head/www/node-devel/Makefile 331644 2013-10-26 00:52:33Z gerald $
+X
+XPORTNAME=	node
+XPORTVERSION=	0.11.8
+XCATEGORIES=	www
+XMASTER_SITES=	http://nodejs.org/dist/v${PORTVERSION}/
+XPKGNAMESUFFIX=	-devel
+XDISTNAME=	${PORTNAME}-v${PORTVERSION}
+X
+XMAINTAINER=	linpct@gmail.com
+XCOMMENT=	V8 javascript for client and server
+X
+XLIB_DEPENDS=	execinfo:${PORTSDIR}/devel/libexecinfo
+X
+XMAN1=		node.1
+X
+XUSES=		gmake
+XHAS_CONFIGURE=	yes
+XUSE_LDCONFIG=	yes
+XUSE_PYTHON=	2.7
+X
+XCONFLICTS=	node-0.[0-9]*
+X
+XONLY_FOR_ARCHS=	i386 amd64
+XCONFIGURE_ARGS=	--prefix=${PREFIX_RELDEST} --without-npm --shared-zlib
+XPREFIX_RELDEST=	${PREFIX:S,^${DESTDIR},,}
+XREINPLACE_ARGS=	-i ''
+X
+XNO_STAGE=	yes
+X.include <bsd.port.options.mk>
+X
+X.if ${OSVERSION} >= 900033 && exists(/usr/bin/clang)
+XCC=	clang
+XCXX=	clang++
+XGYP_DEFINES+=	clang=1
+X.else
+XUSE_GCC?=	yes
+XGYP_DEFINES+=	gcc_version=${CXX:S/g++//}
+X.endif
+X
+Xpost-patch:
+X	@${REINPLACE_CMD} -e 's|/usr/local|${LOCALBASE}|' \
+X		${WRKSRC}/deps/v8/tools/gyp/v8.gyp
+X
+Xpost-install:
+X	${MKDIR} ${PREFIX}/lib/node_modules/
+X	${TOUCH} ${PREFIX}/lib/node_modules/.keepme
+X	${CHMOD} ${MANMODE} ${PREFIX}/man/man1/node.1
+X	@${ECHO_MSG}
+X	@${ECHO_MSG} "Note: If you need npm (Node Package Manager), please install www/npm."
+X	@${ECHO_MSG}
+X
+X.include <bsd.port.mk>
+3e6c3f8bf1ced45dee155fbad1c11c68
+echo c - node-devel/files
+mkdir -p node-devel/files > /dev/null 2>&1
+echo x - node-devel/files/patch-platform-freebsd.cc
+sed 's/^X//' >node-devel/files/patch-platform-freebsd.cc << '0239b8c81a111a0d44f3c5df99af9d9b'
+X--- deps/v8/src/platform-freebsd.orig 2013-11-18 22:50:13.000000000 -0200
+X+++ deps/v8/src/platform-freebsd.cc 2013-11-18 22:55:37.000000000 -0200
+X@@ -189,7 +189,7 @@
+X     // There may be no filename in this line.  Skip to next.
+X     if (start_of_path == NULL) continue;
+X     buffer[bytes_read] = 0;
+X-    LOG(isolate SharedLibraryEvent(start_of_path, start, end));
+X+    LOG(isolate, SharedLibraryEvent(start_of_path, start, end));
+X   }
+X   close(fd);
+X }
+0239b8c81a111a0d44f3c5df99af9d9b
+exit
+
